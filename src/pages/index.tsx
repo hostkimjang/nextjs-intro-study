@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import NavBar from "../../components/NavBar";
 import Seo from "../../components/Seo";
 import { log } from "console";
-
-const API_KEY = "c58144a43b2648ad65d320ddc020f678";
+import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 
 interface Movie {
   id: number;
@@ -11,23 +10,15 @@ interface Movie {
   poster_path: string;
 }
 
-export default function Home() {
+export default function Home({
+  results,
+}: InferGetServerSidePropsType<GetServerSideProps>) {
   const [movies, setMovies] = useState<Movie[]>();
-  useEffect(() => {
-    (async () => {
-      const { results } = await (
-        await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}`
-        )
-      ).json();
-      setMovies(results);
-    })();
-  }, []);
+
   return (
     <div className="container">
       <Seo title="Home" />
-      {!movies && <h4>Loading...</h4>}
-      {movies?.map((movie) => (
+      {results?.map((movie: Movie) => (
         <div className="movie" key={movie.id}>
           <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
           <h4>{movie.original_title}</h4>
@@ -56,4 +47,15 @@ export default function Home() {
       `}</style>
     </div>
   );
+}
+
+export async function getServerSideProps({}: GetServerSideProps) {
+  const { results } = await (
+    await fetch(`http://localhost:3000/api/movies`)
+  ).json();
+  return {
+    props: {
+      results,
+    },
+  };
 }

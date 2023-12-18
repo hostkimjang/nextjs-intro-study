@@ -3,6 +3,8 @@ import NavBar from "../../components/NavBar";
 import Seo from "../../components/Seo";
 import { log } from "console";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 interface Movie {
   id: number;
@@ -14,14 +16,23 @@ export default function Home({
   results,
 }: InferGetServerSidePropsType<GetServerSideProps>) {
   const [movies, setMovies] = useState<Movie[]>();
-
+  const router = useRouter();
+  const onClick = (id: number, title: string) => {
+    router.push(`/movies/${title}/${id}`);
+  };
   return (
     <div className="container">
       <Seo title="Home" />
       {results?.map((movie: Movie) => (
-        <div className="movie" key={movie.id}>
+        <div
+          onClick={() => onClick(movie.id, movie.original_title)}
+          className="movie"
+          key={movie.id}
+        >
           <img src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`} />
-          <h4>{movie.original_title}</h4>
+          <Link href={`/movies/${movie.original_title}/${movie.id}`}>
+            <h4>{movie.original_title}</h4>
+          </Link>
         </div>
       ))}
       <style jsx>{`
@@ -30,6 +41,9 @@ export default function Home({
           grid-template-columns: 1fr 1fr;
           padding: 20px;
           gap: 20px;
+        }
+        .movie {
+          cursor: pointer;
         }
         .movie img {
           max-width: 100%;
